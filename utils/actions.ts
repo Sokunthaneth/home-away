@@ -5,7 +5,12 @@ import { auth, clerkClient, currentUser } from "@clerk/nextjs/server";
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { PrismaClient } from "@prisma/client";
-import { imageSchema, profileSchema, validateWithZodSchema } from "./schemas";
+import {
+  imageSchema,
+  profileSchema,
+  propertySchema,
+  validateWithZodSchema,
+} from "./schemas";
 import { uploadImage } from "./supabase";
 
 const prisma = new PrismaClient();
@@ -143,4 +148,32 @@ export const updateProfileImageAction = async (
   } finally {
     await prisma.$disconnect();
   }
+};
+
+export const createPropertyAction = async (
+  prevState: any,
+  formData: FormData
+): Promise<{ message: string }> => {
+  const user = await getAuthUser();
+  try {
+    const rawData = Object.fromEntries(formData);
+    const file = formData.get("image") as File;
+
+    const validatedFields = validateWithZodSchema(propertySchema, rawData);
+    const validatedFile = validateWithZodSchema(imageSchema, { image: file });
+    const fullPath = await uploadImage(validatedFile.image);
+
+    await prisma.property.create({
+      data: {
+        ...validatedFields,
+        image: fullPath,
+        profileId: user.id,
+      },
+    });
+  } catch (error) {
+    return renderError(error);
+  } finally {
+    await prisma.$disconnect();
+  }
+  redirect("/");
 };
