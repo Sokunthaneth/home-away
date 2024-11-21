@@ -17,14 +17,14 @@ import { useEffect, useRef } from "react";
 function PropertyMap({ countryCode }: { countryCode: string }) {
   const defaultLocation = [51.505, -0.09] as [number, number];
   const location = findCountryByCode(countryCode)?.location as [number, number];
-   const mapRef = useRef(null);
+  const mapRef = useRef<L.Map | null>(null);
 
-   useEffect(() => {
-     if (mapRef.current) {
-       // Clean up the map instance if it already exists
-       mapRef.current.leafletElement.remove();
-     }
-   }, [countryCode]);
+  useEffect(() => {
+    if (mapRef.current) {
+      // Clean up the map instance if it already exists
+      mapRef.current.remove();
+    }
+  }, [countryCode]);
 
   return (
     <div className="mt-4">

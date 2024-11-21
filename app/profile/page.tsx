@@ -12,6 +12,10 @@ import ImageInputContainer from "@/components/form/ImageInputContainer";
 async function ProfilePage() {
   const profile = await fetchProfile();
 
+  if ("message" in profile) {
+    return <div>Error: {profile.message}</div>;
+  }
+
   return (
     <section>
       <h1 className="text-2xl font-semibold mb-8 capitalize">user profile</h1>

@@ -4,7 +4,7 @@ import { fetchProfileImage } from "@/utils/actions";
 
 async function UserIcon() {
   const profileImage = await fetchProfileImage();
-  if (profileImage)
+  if (typeof profileImage === "string")
     return (
       <img
         src={profileImage}

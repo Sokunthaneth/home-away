@@ -2,7 +2,7 @@
 import { Input } from "../ui/input";
 import { useSearchParams, usePathname, useRouter } from "next/navigation";
 import { useDebouncedCallback } from "use-debounce";
-import { useState, useEffect } from "react";
+import { useState, useEffect, Suspense } from "react";
 
 function NavSearch() {
   const searchParams = useSearchParams();
@@ -40,4 +40,10 @@ function NavSearch() {
     />
   );
 }
-export default NavSearch;
+export default function NavSearchWrapper() {
+  return (
+    <Suspense fallback={<div>Loading...</div>}>
+      <NavSearch />
+    </Suspense>
+  );
+}
