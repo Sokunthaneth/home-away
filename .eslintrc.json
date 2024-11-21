@@ -37,6 +37,13 @@
       "rules": {
         "react-hooks/exhaustive-deps": "off"
       }
+    },
+    {
+      "files": ["./components/reviews/ReviewCard.tsx"],
+      "rules": {
+        "@next/next/no-img-element": "off",
+        "jsx-a11y/alt-text": "off"
+      }
     }
   ]
 }

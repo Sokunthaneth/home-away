@@ -13,6 +13,7 @@ import PropertyReviews from "@/components/reviews/PropertyReviews";
 import SubmitReview from "@/components/reviews/SubmitReview";
 import { Separator } from "@/components/ui/separator";
 import { fetchPropertyDetails, findExistingReview } from "@/utils/actions";
+import { auth } from "@clerk/nextjs/server";
 import { redirect } from "next/navigation";
 
 async function PropertyDetailsPage({
@@ -31,7 +32,7 @@ async function PropertyDetailsPage({
   const firstName = property.profile.firstName;
   const profileImage = property.profile.profileImage;
 
-  const { userId } = auth();
+  const { userId } = await auth();
   const isNotOwner = property.profile.clerkId !== userId;
   const reviewDoesNotExist =
     userId && isNotOwner && !(await findExistingReview(userId, property.id));
