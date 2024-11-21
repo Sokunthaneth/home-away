@@ -4,7 +4,6 @@ import db from "./db";
 import { auth, clerkClient, currentUser } from "@clerk/nextjs/server";
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
-import { PrismaClient } from "@prisma/client";
 import {
   imageSchema,
   profileSchema,
@@ -12,8 +11,6 @@ import {
   validateWithZodSchema,
 } from "./schemas";
 import { uploadImage } from "./supabase";
-
-const prisma = new PrismaClient();
 
 const getAuthUser = async () => {
   const user = await currentUser();
@@ -23,7 +20,6 @@ const getAuthUser = async () => {
 };
 
 const renderError = (error: unknown): { message: string } => {
-  console.log(error);
   return {
     message: error instanceof Error ? error.message : "An error occurred",
   };
@@ -41,7 +37,7 @@ export const createProfileAction = async (
     const rawData = Object.fromEntries(formData);
     const validatedFields = validateWithZodSchema(profileSchema, rawData);
 
-    await prisma.profile.create({
+    await db.profile.create({
       data: {
         clerkId: user.id,
         email: user.emailAddresses[0].emailAddress,
@@ -56,8 +52,6 @@ export const createProfileAction = async (
     });
   } catch (error) {
     return renderError(error);
-  } finally {
-    await prisma.$disconnect();
   }
 
   redirect("/");
@@ -68,7 +62,7 @@ export const fetchProfileImage = async () => {
 
   if (!user) return null;
   try {
-    const profile = await prisma.profile.findUnique({
+    const profile = await db.profile.findUnique({
       where: { clerkId: user.id },
       select: {
         profileImage: true,
@@ -76,25 +70,23 @@ export const fetchProfileImage = async () => {
     });
 
     return profile?.profileImage;
-  } finally {
-    await prisma.$disconnect();
+  } catch (error) {
+    return renderError(error);
   }
-
-  await prisma.$disconnect();
 };
 
 export const fetchProfile = async () => {
   const user = await getAuthUser();
 
   try {
-    const profile = await prisma.profile.findUnique({
+    const profile = await db.profile.findUnique({
       where: { clerkId: user.id },
     });
 
     if (!profile) redirect("/profile/create");
     return profile;
-  } finally {
-    await prisma.$disconnect();
+  } catch (error) {
+    return renderError(error);
   }
 };
 
@@ -107,7 +99,7 @@ export const updateProfileAction = async (
     const rawData = Object.fromEntries(formData);
     const validatedFields = validateWithZodSchema(profileSchema, rawData);
 
-    await prisma.profile.update({
+    await db.profile.update({
       where: { clerkId: user.id },
       data: validatedFields,
     });
@@ -116,8 +108,6 @@ export const updateProfileAction = async (
     return { message: "update profile actions" };
   } catch (error) {
     return renderError(error);
-  } finally {
-    await prisma.$disconnect();
   }
 };
 
@@ -132,7 +122,7 @@ export const updateProfileImageAction = async (
     const validatedFields = validateWithZodSchema(imageSchema, { image });
     const fullPath = await uploadImage(validatedFields.image);
 
-    await prisma.profile.update({
+    await db.profile.update({
       where: {
         clerkId: user.id,
       },
@@ -145,8 +135,6 @@ export const updateProfileImageAction = async (
     return { message: "Profile image updated successfully" };
   } catch (error) {
     return renderError(error);
-  } finally {
-    await prisma.$disconnect();
   }
 };
 
@@ -163,7 +151,7 @@ export const createPropertyAction = async (
     const validatedFile = validateWithZodSchema(imageSchema, { image: file });
     const fullPath = await uploadImage(validatedFile.image);
 
-    await prisma.property.create({
+    await db.property.create({
       data: {
         ...validatedFields,
         image: fullPath,
@@ -172,8 +160,6 @@ export const createPropertyAction = async (
     });
   } catch (error) {
     return renderError(error);
-  } finally {
-    await prisma.$disconnect();
   }
   redirect("/");
 };
@@ -185,7 +171,7 @@ export const fetchProperties = async ({
   search?: string;
   category?: string;
 }) => {
-  const properties = await prisma.property.findMany({
+  return await db.property.findMany({
     where: {
       category,
       OR: [
@@ -205,7 +191,6 @@ export const fetchProperties = async ({
       createdAt: "desc",
     },
   });
-  return properties;
 };
 
 export const fetchFavoriteId = async ({
@@ -214,16 +199,20 @@ export const fetchFavoriteId = async ({
   propertyId: string;
 }) => {
   const user = await getAuthUser();
-  const favorite = await prisma.favorite.findFirst({
-    where: {
-      propertyId,
-      profileId: user.id,
-    },
-    select: {
-      id: true,
-    },
-  });
-  return favorite?.id || null;
+  try {
+    const favorite = await db.favorite.findFirst({
+      where: {
+        propertyId,
+        profileId: user.id,
+      },
+      select: {
+        id: true,
+      },
+    });
+    return favorite?.id || null;
+  } catch (error) {
+    return renderError(error);
+  }
 };
 
 export const toggleFavoriteAction = async (prevState: {
@@ -235,13 +224,13 @@ export const toggleFavoriteAction = async (prevState: {
   const { propertyId, favoriteId, pathname } = prevState;
   try {
     if (favoriteId) {
-      await prisma.favorite.delete({
+      await db.favorite.delete({
         where: {
           id: favoriteId,
         },
       });
     } else {
-      await prisma.favorite.create({
+      await db.favorite.create({
         data: {
           propertyId,
           profileId: user.id,
@@ -252,14 +241,12 @@ export const toggleFavoriteAction = async (prevState: {
     return { message: favoriteId ? "Removed from Faves" : "Added to Faves" };
   } catch (error) {
     return renderError(error);
-  } finally {
-    await prisma.$disconnect();
   }
 };
 
 export const fetchFavorites = async () => {
   const user = await getAuthUser();
-  const favorites = await prisma.favorite.findMany({
+  const favorites = await db.favorite.findMany({
     where: {
       profileId: user.id,
     },
@@ -279,3 +266,13 @@ export const fetchFavorites = async () => {
   return favorites.map((favorite) => favorite.property);
 };
 
+export const fetchPropertyDetails = async (id: string) => {
+  return await db.property.findUnique({
+    where: {
+      id,
+    },
+    include: {
+      profile: true,
+    },
+  });
+};

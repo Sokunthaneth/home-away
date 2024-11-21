@@ -3127,7 +3127,7 @@ export default FavoritesPage;
 - utils/actions.ts
 
 ```ts
-export const fetchPropertyDetails = (id: string) => {
+export const fetchPropertyDetails = async (id: string) => {
   return db.property.findUnique({
     where: {
       id,
