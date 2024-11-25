@@ -8,7 +8,7 @@ import React from "react";
 
 async function CreateProfielPage() {
   const user = await currentUser();
-  if (user?.privateMetadata?.hasProfile) redirect("/");
+  if (user?.privateMetadata.hasProfile) redirect("/");
 
   return (
     <section>

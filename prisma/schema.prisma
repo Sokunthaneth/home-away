@@ -1,7 +1,7 @@
 datasource db {
     provider  = "postgresql"
-    url       = env("DATABASE_URL")
-    directUrl = env("DIRECT_URL")
+    url       = env("NEXT_PUBLIC_DATABASE_URL")
+    directUrl = env("NEXT_PUBLIC_DIRECT_URL")
 }
 
 generator client {
@@ -21,6 +21,7 @@ model Profile {
     Property     Property[]
     Favorite     Favorite[]
     Review       Review[]
+    Booking      Booking[]
 }
 
 model Property {
@@ -43,6 +44,7 @@ model Property {
     profileId   String
     Favorite    Favorite[]
     Review      Review[]
+    Booking     Booking[]
 }
 
 model Favorite {
@@ -67,4 +69,19 @@ model Review {
     comment    String
     createdAt  DateTime @default(now())
     updatedAt  DateTime @updatedAt
+}
+
+model Booking {
+    id            String   @id @default(uuid())
+    profile       Profile  @relation(fields: [profileId], references: [clerkId], onDelete: Cascade)
+    profileId     String
+    property      Property @relation(fields: [propertyId], references: [id], onDelete: Cascade)
+    propertyId    String
+    orderTotal    Int
+    totalNights   Int
+    checkIn       DateTime
+    checkOut      DateTime
+    paymentStatus Boolean  @default(false)
+    createdAt     DateTime @default(now())
+    updatedAt     DateTime @updatedAt
 }

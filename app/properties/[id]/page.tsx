@@ -4,6 +4,7 @@ import PropertyRating from "@/components/card/PropertyRating";
 import Amenities from "@/components/properties/Amenities";
 import BreadCrumbs from "@/components/properties/BreadCrumbs";
 import Description from "@/components/properties/Description";
+import { DynamicBookingWrapper } from "@/components/properties/DyanmicBookingWrapper";
 import { DynamicMap } from "@/components/properties/DynamicMap";
 import ImageContainer from "@/components/properties/ImageContainer";
 import PropertyDetails from "@/components/properties/PropertyDetails";
@@ -63,7 +64,11 @@ async function PropertyDetailsPage({
         </div>
         <div className="lg:col-span-4 flex flex-col items-center">
           {/* calendar */}
-          <BookingCalendar />
+          <DynamicBookingWrapper
+            propertyId={property.id}
+            price={property.price}
+            bookings={property.Booking}
+          />
         </div>
       </section>
       {reviewDoesNotExist && <SubmitReview propertyId={property.id} />}
