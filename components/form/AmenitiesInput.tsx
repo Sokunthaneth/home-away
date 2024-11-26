@@ -1,6 +1,6 @@
 "use client";
 import { useState } from "react";
-import { conservativeAmenities as amenities, Amenity } from "@/utils/amenities";
+import { amenities, Amenity } from "@/utils/amenities";
 import { Checkbox } from "@/components/ui/checkbox";
 
 function AmenitiesInput({ defaultValue }: { defaultValue?: Amenity[] }) {
@@ -39,7 +39,7 @@ function AmenitiesInput({ defaultValue }: { defaultValue?: Amenity[] }) {
               className="text-sm font-medium leading-none capitalize flex gap-x-2 items-center"
             >
               {amenity.name}
-              <amenity.icon className="w-4 h-4" />
+              {/* <amenity.icon className="w-4 h-4" /> */}
             </label>
           </div>
         ))}
