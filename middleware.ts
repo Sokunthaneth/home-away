@@ -11,7 +11,7 @@ export default clerkMiddleware(async (auth, req) => {
   if (isAdminRoute(req) && !isAdminUser) {
     return NextResponse.redirect(new URL("/", req.url));
   }
-  if (!isPublicRoute(req)) (await auth()).redirectToSignIn();
+  if (!isPublicRoute(req)) await auth.protect();
 });
 
 export const config = {
