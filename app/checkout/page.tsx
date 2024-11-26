@@ -1,7 +1,7 @@
 "use client";
 import axios from "axios";
 import { useSearchParams } from "next/navigation";
-import React, { useCallback } from "react";
+import React, { Suspense, useCallback } from "react";
 import { loadStripe } from "@stripe/stripe-js";
 import {
   EmbeddedCheckoutProvider,
@@ -13,6 +13,14 @@ const stripePromise = loadStripe(
 );
 
 export default function CheckoutPage() {
+  return (
+    <Suspense fallback={<div>Loading...</div>}>
+      <CheckoutContent />
+    </Suspense>
+  );
+}
+
+function CheckoutContent() {
   const searchParams = useSearchParams();
 
   const bookingId = searchParams.get("bookingId");
@@ -23,7 +31,7 @@ export default function CheckoutPage() {
       bookingId: bookingId,
     });
     return response.data.clientSecret;
-  }, []);
+  }, [bookingId]);
 
   const options = { fetchClientSecret };
 

@@ -1,4 +1,3 @@
-import BookingCalendar from "@/app/bookings/BookingCalendar";
 import FavoriteToggleButton from "@/components/card/FavoriteToggleButton";
 import PropertyRating from "@/components/card/PropertyRating";
 import Amenities from "@/components/properties/Amenities";
